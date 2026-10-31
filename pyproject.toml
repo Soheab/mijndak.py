@@ -1,0 +1,100 @@
+[build-system]
+requires = ["uv_build>=0.9,<0.14"]
+build-backend = "uv_build"
+
+[project]
+name = "mijndak.py"
+version = "1.0.0"
+description = "Unofficial async Python client for the DAK / WoningNet (mijndak.nl) woningzoekenden portal"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Soheab", email = "33902984+Soheab@users.noreply.github.com" },
+]
+keywords = [
+    "woningnet",
+    "mijndak",
+    "dak",
+    "woningnetregioamsterdam",
+    "huurwoning",
+    "outsystems",
+    "aiohttp",
+    "msgspec",
+]
+classifiers = [
+    "Development Status :: 3 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Framework :: aiohttp",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Typing :: Typed",
+]
+dependencies = [
+    "aiohttp>=3.10",
+    "msgspec>=0.18.6",
+    "yarl>=1.9",
+]
+
+[project.optional-dependencies]
+speedups = ["aiohttp[speedups]>=3.10"]
+dev = ["pyright>=1.1.380", "ruff>=0.6", "pytest>=8", "pytest-asyncio>=0.24"]
+
+[project.urls]
+Repository = "https://github.com/Soheab/mijndak.py"
+Issues = "https://github.com/Soheab/mijndak.py/issues"
+
+[tool.uv.build-backend]
+module-name = "mijndak"
+module-root = ""
+
+[tool.pyright]
+include = ["mijndak", "examples", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = true
+reportUnnecessaryTypeIgnoreComment = true
+reportImplicitOverride = true
+reportPropertyTypeMismatch = true
+reportUninitializedInstanceVariable = true
+
+[tool.ruff]
+line-length = 125
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "UP",
+    "B",
+    "SIM",
+    "RUF",
+    "ASYNC",
+    "PERF",
+    "PL",
+    "TC",
+]
+ignore = [
+    "too-many-arguments",
+    "magic-value-comparison",
+    "ambiguous-variable-name",
+    "too-many-public-methods",
+]
+preview = true
+
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["msgspec.Struct", "typing.TypedDict"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
