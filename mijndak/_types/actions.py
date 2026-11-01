@@ -21,12 +21,44 @@ from .account_inputs import (
 )
 from .auth.inputs import LoginInputs, LogoutInputs
 from .common import ResultPayload
+from .flows import (
+    AccessibilityWishInputs,
+    CityWishInputs,
+    DistrictWishInputs,
+    EmptyInputs,
+    HousingSubtypeWishInputs,
+    HousingTypeWishInputs,
+    MandateInputs,
+    MandateStatusInputs,
+    MaximumWishInputs,
+    MFABackupInputs,
+    MFACodeInputs,
+    MinimumWishInputs,
+    RecalculateWishesInputs,
+    RemoveCityWishInputs,
+    StartPaymentInputs,
+)
 from .listings.inputs import HideInputs, PublicationInputs, ReactInputs, SaveInputs
 
 __all__ = ("ActionInputs", "ActionResultPayload")
 
 type ActionInputs = (
-    LoginInputs
+    EmptyInputs
+    | MinimumWishInputs
+    | MaximumWishInputs
+    | RecalculateWishesInputs
+    | CityWishInputs
+    | DistrictWishInputs
+    | RemoveCityWishInputs
+    | HousingTypeWishInputs
+    | HousingSubtypeWishInputs
+    | AccessibilityWishInputs
+    | MFACodeInputs
+    | MFABackupInputs
+    | StartPaymentInputs
+    | MandateInputs
+    | MandateStatusInputs
+    | LoginInputs
     | LogoutInputs
     | PublicationInputs
     | ReactInputs

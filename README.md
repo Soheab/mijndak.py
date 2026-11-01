@@ -205,3 +205,78 @@ Every error the library raises is a `mijndak.MijnDakError`, so you can catch the
 | `NotLoggedInError`    | You called something that needs a login, or your session expired. |
 | `ServerError`         | DAK said no, for example because a listing has closed.            |
 | `HTTPError`           | The request itself failed, for example because the site is down.  |
+
+
+## Editing housing wishes
+
+`client.wishes` edits the same wizard used by DAK. Option IDs come from the
+account's current catalogue; existing association IDs are preserved when editing.
+
+```python
+await client.wishes.set_minimum_rooms(3)
+await client.wishes.set_maximum_rent(950)  # whole euros per month
+await client.wishes.set_minimum_area(65)  # square metres
+
+cities = await client.wishes.cities()
+# Present these options to the user, then pass their chosen IDs:
+await client.wishes.set_cities(chosen_city_ids)
+await client.wishes.set_districts(city_id, chosen_district_ids)
+await client.wishes.set_housing_types(chosen_group_ids)
+await client.wishes.set_housing_subtypes(group_id, chosen_subtype_ids)
+await client.wishes.set_accessibility(chosen_accessibility_ids)
+```
+
+`districts(city_id)`, `housing_types()`, `housing_subtypes(group_id)` and
+`accessibility()` return `WishChoice` objects with `id`, `name`, `selected` and
+`code`. Setters replace the selection within that category. Like DAK's wizard,
+clearing a town's districts removes that town, and accessibility choices include
+the alternatives implied by DAK's rules. Each save recalculates housing matches
+using the account's existing wish-filter setting. Saving and recalculation are
+separate upstream operations: a recalculation failure can happen after the wish
+was saved. Refresh `client.account.housing_wishes()` before deciding to retry.
+
+## Setting up MFA
+
+```python
+setup = await client.mfa.start_setup()
+# Privately display setup.qr_code for scanning in the DAK app.
+result = await client.mfa.activate(code_from_dak_app)
+print(result.is_success, result.reason)
+status = await client.mfa.status()
+```
+
+This is DAK-app enrollment, not a generic TOTP authenticator flow. `start_setup()`
+may create enrollment state; QR contents are excluded from the model's repr.
+Deactivation is explicit: `request_deactivation()` requests device approval,
+`deactivate(code)` submits the resulting code, and
+`deactivate_with_backup_code(code)` accepts an already received backup-email code.
+Read `status()` for device and backup-address information. Codes and QR payloads
+are credentials and should not be logged. Every MFA operation returns DAK's
+success flag and explanation rather than treating an HTTP response as approval.
+
+## Payments and bank mandates
+
+```python
+options = await client.payments.options()
+# Display options.choices.actions and options.banks / options.choices.banks.
+payment = await client.payments.start(chosen_action_id, bank_code=chosen_bank_code)
+# Hand payment.url to the user's browser to complete bank authorization.
+
+banks = await client.payments.mandate_banks()
+mandate = await client.payments.start_mandate(chosen_bank_code)
+# Complete mandate.url in the browser, then pass the bank's returned GUID:
+status = await client.payments.mandate_status(return_guid)
+```
+
+Initiation validates the chosen method and bank against the current account's
+options. It returns the URL without visiting it or approving anything at the bank.
+A redirect or successful initiation is not proof of payment; read the existing
+`client.account.open_payment()` and `client.account.payments()` for DAK's account
+state afterward. A payment or mandate call is never made automatically by an
+account read. Payment `guid` values, when supplied by an existing flow, are passed
+through explicitly. Mandate status is returned verbatim rather than assuming
+that an unfamiliar status means approval.
+
+These contracts were derived from DAK's public wizard, MFA and payment client
+scripts. Offline tests cover real SDK serialization/decoding and flow sequencing;
+live enrollment, account changes and financial authorizations were not executed.

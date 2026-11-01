@@ -7,8 +7,11 @@ from ..region import AMSTERDAM, Region
 from ._account import AccountClient
 from ._auth import AuthClient
 from ._listing import ListingsClient
+from ._mfa import MFAClient
+from ._payments import PaymentsClient
 from ._reactions import ReactionsClient
 from ._settings import SettingsClient
+from ._wishes import HousingWishesClient
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -23,7 +26,7 @@ class Client:
     """Async client for DAK (mijndak.nl), the social housing platform used by several Dutch regions.
 
     Methods are grouped by topic into sub-clients: :attr:`auth`, :attr:`listings`, :attr:`reactions`,
-    :attr:`account` and :attr:`settings`.
+    :attr:`account`, :attr:`settings`, :attr:`wishes`, :attr:`mfa` and :attr:`payments`.
 
     Parameters
     ----------
@@ -135,3 +138,36 @@ class Client:
             A new sub-client that uses this client's session.
         """
         return SettingsClient(self)
+
+    @property
+    def wishes(self) -> HousingWishesClient:
+        """Methods for changing the account's housing wishes.
+
+        Returns
+        -------
+        :class:`HousingWishesClient`
+            A new sub-client that uses this client's session.
+        """
+        return HousingWishesClient(self)
+
+    @property
+    def mfa(self) -> MFAClient:
+        """Methods for turning the DAK app's multi-factor authentication on and off.
+
+        Returns
+        -------
+        :class:`MFAClient`
+            A new sub-client that uses this client's session.
+        """
+        return MFAClient(self)
+
+    @property
+    def payments(self) -> PaymentsClient:
+        """Methods for paying fees and setting up direct debit.
+
+        Returns
+        -------
+        :class:`PaymentsClient`
+            A new sub-client that uses this client's session.
+        """
+        return PaymentsClient(self)
