@@ -3,13 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from .._types import DataSharingConsentPayload
+from ..endpoints import Account as AccountEndpoints
 from ..models import (
     AccountStatus,
     ActionResult,
     ConfigurationResponse,
     CurrentHousingResponse,
+    DataSharingResponse,
     DocumentsResponse,
     HouseholdResponse,
+    HouseholdRole,
     MutationResult,
     OpenPayment,
     PaymentsResponse,
@@ -21,6 +24,7 @@ from ..models import (
     SubscriptionsResponse,
     WishesResponse,
 )
+from ..models.base import records
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -89,6 +93,49 @@ class AccountClient:
             The request failed.
         """
         return PointsLinesResponse(await self.__http.get_points_lines(), self.__http).registrations
+
+    async def household_roles(self) -> list[HouseholdRole]:
+        """The roles a household member can have, such as co-applicant or child.
+
+        Pass a role's :attr:`HouseholdRole.id` to :meth:`update_household_member`.
+
+        Returns
+        -------
+        list[:class:`HouseholdRole`]
+            Each role with its ID and name.
+
+        Raises
+        ------
+        :class:`NotLoggedInError`
+            The client is not logged in.
+        :class:`ServerError`
+            DAK returned an error.
+        :class:`HTTPError`
+            The request failed.
+        """
+        data = await self.__http.data_action(AccountEndpoints.HOUSEHOLD_ROLES)
+        return [HouseholdRole(item.get("RelatieRolSoortCode") or {}, self.__http) for item in records(data)]
+
+    async def data_sharing(self) -> DataSharingResponse:
+        """The account's consents to share its data (*gegevensdeling*).
+
+        Pass a consent's :attr:`ConsentDetails.id` to :meth:`set_data_sharing`.
+
+        Returns
+        -------
+        :class:`DataSharingResponse`
+            Each consent with whether it is given, whether it can be changed and what withdrawing it means.
+
+        Raises
+        ------
+        :class:`NotLoggedInError`
+            The client is not logged in.
+        :class:`ServerError`
+            DAK returned an error.
+        :class:`HTTPError`
+            The request failed.
+        """
+        return DataSharingResponse(await self.__http.get_data_sharing(), self.__http)
 
     async def housing_wishes(self) -> WishesResponse:
         """The account's housing wishes (*woonwensen*) and the options to choose from.

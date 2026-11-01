@@ -41,6 +41,7 @@ from .._types import (
     UserItemPayload,
     WishesFilterInputs,
 )
+from .._types.account import HouseholdRoleItemPayload
 from .base import EP, EP_REUSABLE, DataAction, ServerAction
 
 __all__ = ("Account", "Settings")
@@ -53,6 +54,11 @@ _DOCUMENTS: Final = f"{EP_REUSABLE}/Profiel_CW_Documenten"
 
 
 class Account:
+    HOUSEHOLD_ROLES: Final = DataAction(
+        f"{_PROFILE}/NatuurlijkPersoonToevoegenOfWijzigen/ScreenDataSetGetRelatieRolSoortCodes",
+        AggregatePayload[HouseholdRoleItemPayload],
+        page_size=100,
+    )
     PERSONAL_DETAILS: Final = DataAction(
         f"{_PROFILE}/Persoonsgegevens/DataActionHaalPersoonsgegevensEnQii", PersonalDetailsPayload
     )

@@ -356,9 +356,37 @@ class SubscriptionsPayload(TypedDict, total=False):
     Result: ResultPayload
 
 
+class ConsentDetailsPayload(TypedDict, total=False):
+    ToestemmingId: str
+    SoortCode: str
+    StatusCode: str
+    StatusNaam: str
+    IsWijzigenToegestaan: bool
+    Omschrijving: str
+    Vraag: str
+    Opmerking: str
+    WaarschuwingBijIntrekken: str
+
+
+class ConsentPayload(TypedDict, total=False):
+    HaalInstemming: ConsentDetailsPayload
+    IsToestemmingVerleend: bool
+
+
+class HouseholdRolePayload(TypedDict, total=False):
+    Id: int
+    Label: str
+    Order: int
+    Is_Active: bool
+    Rol: str
+
+
+class HouseholdRoleItemPayload(TypedDict, total=False):
+    RelatieRolSoortCode: HouseholdRolePayload
+
+
 class DataSharingPayload(TypedDict, total=False):
-    #: Item shape unknown: the list was empty on the account it was captured from.
-    Gegevensdeling: OSListPayload[dict[str, object]]
+    Gegevensdeling: OSListPayload[ConsentPayload]
     Result: ResultPayload
 
 

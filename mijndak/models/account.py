@@ -8,9 +8,12 @@ __all__ = (
     "CodeName",
     "Configuration",
     "ConfigurationResponse",
+    "Consent",
+    "ConsentDetails",
     "ContactDetails",
     "CurrentHousing",
     "CurrentHousingResponse",
+    "DataSharingResponse",
     "DisplayPreferences",
     "Document",
     "DocumentType",
@@ -18,6 +21,7 @@ __all__ = (
     "ExternalLink",
     "Household",
     "HouseholdResponse",
+    "HouseholdRole",
     "Income",
     "MFADetails",
     "MutationResult",
@@ -1287,3 +1291,95 @@ class PasswordChangeResult(Model):
             :data:`True` if the change succeeded.
         """
         return self.is_changed
+
+
+class ConsentDetails(Model):
+    """What a consent to share data is about, and whether it can be changed.
+
+    Attributes
+    ----------
+    id: :class:`str` | :data:`None`
+        The consent's ID. Pass it to :meth:`AccountClient.set_data_sharing`. (*toestemming id*)
+    code: :class:`str` | :data:`None`
+        The kind of consent. (*soort code*)
+    status_code: :class:`str` | :data:`None`
+        The code of the consent's status. (*status code*)
+    status: :class:`str` | :data:`None`
+        The consent's status. (*status naam*)
+    is_editable: :class:`bool`
+        Whether the consent can be changed. (*is wijzigen toegestaan*)
+    description: :class:`str` | :data:`None`
+        What the consent is about. (*omschrijving*)
+    question: :class:`str` | :data:`None`
+        The question the website asks. (*vraag*)
+    note: :class:`str` | :data:`None`
+        An extra note. (*opmerking*)
+    withdrawal_warning: :class:`str` | :data:`None`
+        What withdrawing the consent means. (*waarschuwing bij intrekken*)
+    """
+
+    id = field(str, "ToestemmingId")
+    code = field(str, "SoortCode")
+    status_code = field(str, "StatusCode")
+    status = field(str, "StatusNaam")
+    is_editable = field(bool, "IsWijzigenToegestaan", default=False)
+    description = field(str, "Omschrijving")
+    question = field(str, "Vraag")
+    note = field(str, "Opmerking")
+    withdrawal_warning = field(str, "WaarschuwingBijIntrekken")
+
+
+class Consent(Model):
+    """A consent to share the account's data, and whether it is given.
+
+    Attributes
+    ----------
+    details: :class:`ConsentDetails`
+        What the consent is about. (*haal instemming*)
+    is_granted: :class:`bool`
+        Whether the consent is given. (*is toestemming verleend*)
+    """
+
+    details = Nested(ConsentDetails, "HaalInstemming")
+    is_granted = field(bool, "IsToestemmingVerleend", default=False)
+
+
+class DataSharingResponse(Model):
+    """The account's consents to share its data.
+
+    Attributes
+    ----------
+    consents: list[:class:`Consent`]
+        The consents. (*gegevensdeling*)
+    result: :class:`Result`
+        Whether fetching the consents succeeded.
+    """
+
+    consents = Items(Consent, "Gegevensdeling")
+    result = Nested(Result, "Result")
+
+
+class HouseholdRole(Model):
+    """A role a household member can have, such as co-applicant or child.
+
+    Get the roles from :meth:`AccountClient.household_roles` instead of guessing their IDs.
+
+    Attributes
+    ----------
+    id: :class:`int` | :data:`None`
+        The role's ID. Pass it to :meth:`AccountClient.update_household_member`.
+    label: :class:`str` | :data:`None`
+        The role's name.
+    order: :class:`int` | :data:`None`
+        The position in the list of roles.
+    is_active: :class:`bool`
+        Whether the role can be chosen.
+    name: :class:`str` | :data:`None`
+        The role's internal name. (*rol*)
+    """
+
+    id = field(int, "Id")
+    label = field(str, "Label")
+    order = field(int, "Order")
+    is_active = field(bool, "Is_Active", default=False)
+    name = field(str, "Rol")
